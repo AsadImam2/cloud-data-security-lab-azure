@@ -1,0 +1,28 @@
+
+# Python virtual environment and cache
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+
+# Sensitive encryption keys
+keys/*.key
+keys/key_manifest.json
+
+# Backups and restored data
+data/backups/
+reports/restore_test/
+
+# Local encrypted data
+data/encrypted/
+
+# Local reports
+reports/*.json
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+# Keep local data and generated reports out of Git
+data/
+reports/
