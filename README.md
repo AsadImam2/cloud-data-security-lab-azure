@@ -39,6 +39,46 @@ The test suite also validates backup creation, key exclusion, recovery behavior,
 
 ## Security Features
 
+## Azure Cloud Implementation
+
+In addition to the local Python simulation, selected data-security controls were configured and tested in Microsoft Azure Storage using a student subscription.
+
+### Azure Resources
+
+- **Storage account:** `cloudsecuritylab`
+- **Blob container:** `security-lab-data`
+- **Sample blob:** `confidential-record.txt`
+- **Inventory report container:** `blob-inventory-reports`
+
+### Controls Configured and Verified
+
+| Control | Implementation / Evidence |
+|---|---|
+| Encryption at rest | Blob properties showed `Server encrypted: true`. |
+| Anonymous access protection | Anonymous blob access was disabled at the storage-account level. |
+| Public access verification | A direct unauthenticated browser request returned `PublicAccessNotPermitted`. |
+| Network restrictions | Public network access was set to selected networks, with two IPv4 entries configured. |
+| Trusted services exception | The trusted Microsoft services network exception was enabled. |
+| Blob versioning and recovery | An earlier blob version was successfully made the current version. |
+| Soft delete | Blob and container soft delete were configured with a 7-day retention period. |
+| Change feed | Blob change feed was enabled. |
+| Lifecycle management | A lifecycle rule was saved to move the specified base blob to the Cool tier when it meets the configured age condition of more than 30 days. |
+| Blob inventory | A daily CSV inventory rule was saved for `security-lab-data/confidential-record.txt`, with all available inventory fields selected. |
+
+### Verification Notes
+
+The unauthenticated browser test confirmed that public blob access was rejected. This demonstrates the configured public-access restriction; it does not prove that every possible unauthorized access path is blocked.
+
+The inventory rule was saved successfully, but the inventory report had not appeared in the destination container during this lab session. Report generation and output validation remain pending.
+
+The lifecycle rule was configured, but its actual tier transition was not observed. Azure may take time to apply lifecycle policies.
+
+### Scope and Limitations
+
+This was a practical configuration exercise in an Azure Storage environment, not a production security audit. Network restrictions, trusted-service exceptions, encryption settings, and access permissions should be reviewed against the intended security requirements.
+
+No claim is made that Azure automatically classified the blob's content as Confidential. The inventory rule collects blob metadata; content classification requires a separate classification capability or process.
+
 ### 1. Data Classification
 
 Organizes and classifies data according to its sensitivity, helping establish appropriate protection requirements.
@@ -159,7 +199,7 @@ This project is an educational local simulation, not a production-ready cloud se
 - DLP scanning can produce false positives or miss sensitive data that does not match configured detection patterns.
 - Region checks demonstrate policy logic but do not independently prove legal or regulatory compliance.
 - Audit logs need additional protection against tampering and unauthorized access in a production environment.
-- No real cloud infrastructure or cloud-provider security controls are deployed by this project.
+- Selected cloud-provider security controls have been configured and tested in Microsoft Azure Storage. The local Python simulation and Azure implementation are separate parts of this educational project. Some Azure controls are configured but their resulting reports or lifecycle actions have not yet been fully verified.
 
 Never commit real credentials, raw encryption keys, sensitive backups, or environment files containing secrets.
 
