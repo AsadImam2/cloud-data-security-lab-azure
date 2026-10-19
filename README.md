@@ -1,224 +1,296 @@
 # Cloud Data Security & Resilience Lab
 
-A Python-based cybersecurity lab demonstrating core cloud data security concepts, including data classification, encryption, key management, backup security, data loss prevention, regional compliance, audit logging, and recovery validation.
+A hands-on cybersecurity project demonstrating cloud data security concepts through a local Python simulation and selected Microsoft Azure Storage security controls.
 
-This project was developed for hands-on learning and portfolio development in cloud security.
+The project focuses on data classification, encryption, key management, recovery, storage access restrictions, versioning, lifecycle management, and audit-related capabilities.
+
+## Project Overview
+
+Cloud environments store data with different sensitivity levels and security requirements. This project explores how to protect that data using local security mechanisms and real cloud-provider controls.
+
+The lab has two separate components:
+
+- **Local Python Lab:** Simulates data security and resilience concepts using Python modules and automated tests.
+- **Azure Cloud Implementation:** Applies selected storage security controls in Microsoft Azure and verifies their observable behavior.
+
+The local simulation and Azure implementation are separate parts of the same educational project. A successful local test does not automatically prove that the equivalent Azure control is configured or working.
 
 ## Project Objectives
 
-- Understand how sensitive data can be classified and protected.
-- Implement authenticated encryption using AES-256-GCM.
-- Demonstrate encryption key management and key rotation.
-- Create backups while excluding raw encryption keys by default.
-- Detect potentially sensitive information using DLP scanning.
-- Evaluate data-region policies through compliance checks.
-- Record security-relevant events using audit logging.
-- Validate encrypted data recovery and rejection of incorrect keys.
+- Classify data according to sensitivity.
+- Demonstrate authenticated encryption and tamper detection.
+- Explore encryption key management and rotation.
+- Apply secure defaults to backup-related workflows.
+- Demonstrate data loss prevention (DLP) concepts.
+- Explore data-region and compliance considerations.
+- Maintain security-related audit records.
+- Validate backup and recovery behavior.
+- Configure and test selected Azure Storage security controls.
+- Document verified results, limitations, and remaining validation work.
 
 ## Technologies Used
 
-- **Language:** Python
-- **Encryption:** AES-256-GCM
-- **Testing:** pytest
-- **Cryptography library:** `cryptography`
-- **Environment:** Local Python virtual environment on Windows
+- Python
+- AES-256-GCM authenticated encryption
+- `cryptography`
+- `pytest`
+- Microsoft Azure Storage
+- Azure Blob Storage
+- Git and GitHub
+- Windows PowerShell
 
-## Project Modules
+## Architecture and Scope
 
-| Module | Purpose |
+| Component | Purpose |
 |---|---|
-| `inventory.py` | Data inventory and classification |
-| `encryption.py` | Encrypt and decrypt data using AES-256-GCM |
-| `key_manager.py` | Manage encryption keys and demonstrate key rotation |
-| `backup_manager.py` | Create backups and exclude raw keys by default |
-| `dlp_scanner.py` | Scan data for potentially sensitive information |
-| `region_compliance.py` | Check data-region policy compliance |
-| `audit_logger.py` | Record security-related events |
+| Local Python simulation | Demonstrates data security concepts in a controlled environment |
+| Local test suite | Checks expected behavior and selected failure cases |
+| Azure Storage account | Provides a real cloud environment for storage security practice |
+| Azure Blob containers | Separate sample data from inventory-report storage |
+| GitHub repository | Documents implementation, tests, and learning outcomes |
 
-The test suite also validates backup creation, key exclusion, recovery behavior, and incorrect-key rejection.
+## Local Python Lab Features
 
-## Security Features
+### 1. Data Classification and Inventory
 
-## Azure Cloud Implementation
+- Maintains a sample data inventory.
+- Demonstrates four sensitivity levels: Public, Internal, Confidential, and Highly Confidential.
+- Validates inventory records and required fields.
+- Generates a local inventory report.
 
-In addition to the local Python simulation, selected data-security controls were configured and tested in Microsoft Azure Storage using a student subscription.
-
-### Azure Resources
-
-- **Storage account:** `cloudsecuritylab`
-- **Blob container:** `security-lab-data`
-- **Sample blob:** `confidential-record.txt`
-- **Inventory report container:** `blob-inventory-reports`
-
-### Controls Configured and Verified
-
-| Control | Implementation / Evidence |
-|---|---|
-| Encryption at rest | Blob properties showed `Server encrypted: true`. |
-| Anonymous access protection | Anonymous blob access was disabled at the storage-account level. |
-| Public access verification | A direct unauthenticated browser request returned `PublicAccessNotPermitted`. |
-| Network restrictions | Public network access was set to selected networks, with two IPv4 entries configured. |
-| Trusted services exception | The trusted Microsoft services network exception was enabled. |
-| Blob versioning and recovery | An earlier blob version was successfully made the current version. |
-| Soft delete | Blob and container soft delete were configured with a 7-day retention period. |
-| Change feed | Blob change feed was enabled. |
-| Lifecycle management | A lifecycle rule was saved to move the specified base blob to the Cool tier when it meets the configured age condition of more than 30 days. |
-| Blob inventory | A daily CSV inventory rule was saved for `security-lab-data/confidential-record.txt`, with all available inventory fields selected. |
-
-### Verification Notes
-
-The unauthenticated browser test confirmed that public blob access was rejected. This demonstrates the configured public-access restriction; it does not prove that every possible unauthorized access path is blocked.
-
-The inventory rule was saved successfully, but the inventory report had not appeared in the destination container during this lab session. Report generation and output validation remain pending.
-
-The lifecycle rule was configured, but its actual tier transition was not observed. Azure may take time to apply lifecycle policies.
-
-### Scope and Limitations
-
-This was a practical configuration exercise in an Azure Storage environment, not a production security audit. Network restrictions, trusted-service exceptions, encryption settings, and access permissions should be reviewed against the intended security requirements.
-
-No claim is made that Azure automatically classified the blob's content as Confidential. The inventory rule collects blob metadata; content classification requires a separate classification capability or process.
-
-### 1. Data Classification
-
-Organizes and classifies data according to its sensitivity, helping establish appropriate protection requirements.
+**Validation:** The local inventory test suite checks valid records, invalid sensitivity values, missing fields, and negative retention values.
 
 ### 2. Encryption at Rest
 
-Uses AES-256-GCM authenticated encryption. The implementation generates a fresh 12-byte nonce for each encryption operation and validates ciphertext integrity during decryption.
+- Uses AES-256-GCM for authenticated encryption.
+- Uses a fresh 12-byte nonce for encryption operations.
+- Demonstrates encryption and decryption of sample data.
+- Checks that modified ciphertext is rejected.
+- Tests decryption with an incorrect key.
 
 ### 3. Key Management and Rotation
 
-Maintains key identifiers and metadata through a key manifest. Encrypted records identify the key ID required for decryption, allowing the application to select the corresponding key.
+- Demonstrates local encryption key management.
+- Maintains a key manifest for the lab.
+- Demonstrates moving to a new key version.
+- Excludes raw key material and the local key manifest from Git tracking.
+
+**Limitation:** This is a local educational implementation, not a production key-management service or a replacement for a cloud KMS/HSM.
 
 ### 4. Secure Backup Defaults
 
-The backup process includes encrypted data and the key manifest but excludes raw encryption key files by default.
-
-Including raw key material requires explicit opt-in. Backups containing keys require stronger protection because anyone who obtains the relevant key may be able to decrypt the associated data.
-
-**Important:** Excluding keys from a backup protects against accidental key exposure, but recovery still depends on separately preserving the required keys.
+- Demonstrates safer backup-related handling of data.
+- Excludes sensitive key material from the intended repository and backup workflows.
 
 ### 5. Data Loss Prevention (DLP)
 
-Demonstrates scanning for potentially sensitive data patterns. Detection results depend on the rules and patterns implemented in the scanner.
+- Demonstrates selected DLP-related concepts in the local lab.
+- Supports learning about sensitive-data exposure and reducing data leakage risks.
 
-### 6. Data-Region Compliance
+### 6. Data-Region and Compliance Considerations
 
-Demonstrates checking data-location information against configured region policies. This is a policy simulation, not a complete regulatory compliance assessment.
+- Includes data-region information in the local inventory.
+- Demonstrates how data location and retention requirements can be documented.
+
+**Limitation:** Recording a region in a local inventory does not establish legal or regulatory compliance.
 
 ### 7. Audit Logging
 
-Records security-relevant application events to support monitoring, troubleshooting, and investigation.
+- Includes audit-related logging concepts for security operations.
+- Supports investigation and verification of selected lab activities.
 
-### 8. Backup Recovery Validation
+### 8. Backup and Recovery Validation
 
-Tests that backed-up encrypted files can be decrypted using the corresponding keys and that decryption with an incorrect key is rejected.
+- Includes recovery-related functionality and tests.
+- Demonstrates why recovery must be validated rather than assumed to work.
+
+## Azure Cloud Implementation
+
+Selected controls were configured and tested in Microsoft Azure Storage using the following resources.
+
+### Azure Resources
+
+| Resource | Name / Configuration |
+|---|---|
+| Storage account | `cloudsecuritylab` |
+| Sample data container | `security-lab-data` |
+| Sample blob | `confidential-record.txt` |
+| Inventory report container | `blob-inventory-reports` |
+
+### Implemented Controls and Observed Results
+
+| Security control | Configuration or observed result |
+|---|---|
+| Encryption at rest | Azure blob properties showed `Server encrypted: true` |
+| Anonymous blob access | Disabled at the storage-account level |
+| Anonymous access verification | Unauthenticated request returned `PublicAccessNotPermitted` |
+| Secure transfer | Required |
+| Minimum TLS version | TLS 1.2 |
+| Storage account key access | Disabled |
+| Encryption key management | Microsoft-managed encryption keys |
+| Infrastructure encryption | Enabled |
+| Blob versioning | Enabled; an earlier version was restored as the current version |
+| Blob soft delete | Enabled with a 7-day retention period |
+| Container soft delete | Enabled with a 7-day retention period |
+| Blob change feed | Enabled; the change-feed container and log files were observed |
+| Public network access | Enabled from selected networks |
+| Network access rules | Two IPv4 entries configured; no virtual-network rules configured |
+| Trusted Microsoft services | Exception enabled |
+| Lifecycle management | Rule saved to move the specified base blob to Cool after more than 30 days |
+| Blob inventory | Daily CSV inventory rule saved for the specified blob prefix |
+
+### Azure Verification Notes
+
+**Anonymous access restriction**
+
+An unauthenticated request to the blob returned the following error:
+
+`PublicAccessNotPermitted`
+
+This verifies that the tested anonymous request was rejected by the storage account. It does not independently prove that every access path, identity, credential, or network rule has been tested.
+
+**Blob versioning and recovery**
+
+Blob versioning was enabled. An earlier version of `confidential-record.txt` was made current, and the restored blob size was observed as 133 bytes.
+
+This demonstrates a successful version-restoration action in the lab. It is not a substitute for testing a complete disaster-recovery process.
+
+**Blob soft delete and container soft delete**
+
+Both features were configured with a seven-day retention period. Their settings were verified in Azure. A separate deletion-and-recovery test should be performed before claiming that the complete recovery workflow has been tested.
+
+**Blob change feed**
+
+The `$blobchangefeed` container and associated log files were observed. The files were not decoded and analyzed, so detailed event contents have not been verified.
+
+**Network restrictions**
+
+The storage account was configured for selected-network access with two IPv4 entries and the trusted Microsoft services exception enabled. The configuration was observed in the portal, but the actual IP addresses and access behavior from each permitted and unpermitted network have not been comprehensively tested.
+
+**Lifecycle management**
+
+The `lab-confidential-data-tiering` rule was saved for the specified base blob, with a condition to move it to the Cool tier after more than 30 days.
+
+The rule's configuration was saved, but an actual lifecycle transition has not yet been observed. Saving a rule alone does not prove that a blob has transitioned tiers.
+
+**Blob inventory**
+
+The `confidential-data-inventory` rule was saved with daily CSV output, all available fields selected, and the prefix:
+
+`security-lab-data/confidential-record.txt`
+
+The rule includes a 30-day creation-time filter. The inventory report has not yet been observed in `blob-inventory-reports`, so successful report generation and its contents remain unverified.
+
+**Important distinction:** Azure Blob Inventory reports blob metadata. It does not automatically inspect the contents of a blob and classify them as Confidential or Highly Confidential. The local Python classification module and Azure inventory feature serve different purposes.
 
 ## Project Structure
 
-The project follows a source-and-tests layout:
+The project contains separate source-code, test, sample-data, key, report, and log areas. The following is a high-level view; the exact module and test filenames should match the files present in the repository.
 
 ```text
 cloud-data-security-lab/
-├── src/
-│   ├── inventory.py
-│   ├── encryption.py
-│   ├── key_manager.py
-│   ├── backup_manager.py
-│   ├── dlp_scanner.py
-│   ├── region_compliance.py
-│   └── audit_logger.py
-├── tests/
-│   ├── test_backup_manager.py
-│   └── test_key_recovery.py
 ├── data/
-│   ├── encrypted/
-│   └── backups/
+│   └── sample/
 ├── keys/
-├── .venv/
-└── README.md
+├── logs/
+├── reports/
+├── src/
+├── tests/
+├── .gitignore
+├── README.md
+└── requirements.txt
 ```
 
-*Note: This is a high-level structure. Other test files and project files may also exist in the actual repository.*
+Generated reports, local sample data, encryption keys, encrypted files, virtual-environment files, and other excluded artifacts may exist locally without being tracked by Git.
 
-## Installation and Setup
+The repository's `.gitignore` excludes the local virtual environment and Python caches, sensitive key files, local encrypted data, generated JSON reports, and local data directories.
 
-### 1. Clone the repository
+## Getting Started
 
-```bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
+### Prerequisites
+
+- Python installed
+- Git installed
+- PowerShell on Windows, or an equivalent terminal
+- A Microsoft Azure account only if you want to reproduce the cloud implementation
+
+### 1. Clone the Repository
+
+```powershell
+git clone https://github.com/AsadImam2/cloud-data-security-lab.git
 cd cloud-data-security-lab
 ```
 
-Replace the placeholder with your actual repository URL after publishing the project.
+### 2. Create a Virtual Environment
 
-### 2. Create a virtual environment
-
-```bash
+```powershell
 python -m venv .venv
 ```
 
-Activate it on Windows PowerShell:
+### 3. Activate the Environment
+
+On Windows PowerShell:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 ```
 
-If PowerShell blocks activation, you can use a process-scoped execution policy adjustment, subject to your system's security policies.
+If PowerShell blocks activation because of the execution policy, you can temporarily allow scripts for the current PowerShell process:
 
-### 3. Install dependencies
-
-```bash
-python -m pip install cryptography pytest
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ```
 
-### 4. Run the tests
+Then activate the environment again.
 
-```bash
-python -m pytest -q
+### 4. Install Dependencies
+
+If `requirements.txt` is present and contains the project's dependencies:
+
+```powershell
+python -m pip install -r requirements.txt
 ```
 
-## Test Results
+### 5. Run the Tests
 
-The complete test suite passed during development.
-
-```text
-27 passed in 0.44s
+```powershell
+python -m pytest
 ```
 
-The tests cover implemented security behaviors, including backup handling and encryption-key recovery.
+The test suite has previously completed successfully with **27 passing tests**.
+
+The execution time varies between runs, and the result may change as the project evolves. Run the tests locally to verify the current repository state.
 
 ## Security Considerations and Limitations
 
-This project is an educational local simulation, not a production-ready cloud security platform.
-
-- Encryption keys are managed locally rather than through a cloud KMS or dedicated secrets vault.
-- Recovery tests use keys stored separately from the encrypted backup within the project environment; this is not a full disaster-recovery exercise.
-- Backup files and manifests require appropriate access controls and secure storage.
-- DLP scanning can produce false positives or miss sensitive data that does not match configured detection patterns.
-- Region checks demonstrate policy logic but do not independently prove legal or regulatory compliance.
-- Audit logs need additional protection against tampering and unauthorized access in a production environment.
-- Selected cloud-provider security controls have been configured and tested in Microsoft Azure Storage. The local Python simulation and Azure implementation are separate parts of this educational project. Some Azure controls are configured but their resulting reports or lifecycle actions have not yet been fully verified.
-
-Never commit real credentials, raw encryption keys, sensitive backups, or environment files containing secrets.
+- This project is an educational lab, not a production-ready cloud security platform.
+- Local encryption keys and key manifests must never be committed to Git.
+- Local key management does not provide all the protections of a managed KMS or HSM.
+- The local Python simulation and Azure configuration must be validated independently.
+- Encryption at rest does not prevent every form of unauthorized access or data exposure.
+- Network restrictions, identity permissions, and storage access controls require separate testing.
+- A saved lifecycle rule does not prove that a lifecycle transition has occurred.
+- A saved inventory rule does not prove that a report has been generated successfully.
+- Data classification in the local inventory does not automatically classify Azure blob contents.
+- Soft delete and versioning support recovery, but do not replace a complete backup and disaster-recovery strategy.
+- Configuring selected storage controls does not establish full regulatory compliance.
+- Azure resource names and settings documented here describe this lab and may need to be adjusted when reproducing it in another subscription.
 
 ## Future Improvements
 
-- Integrate a cloud KMS or secrets-management service.
-- Add automated backup restoration and integrity checks.
-- Introduce role-based access control for sensitive operations.
-- Improve DLP detection and reporting.
-- Add structured security-event logging and monitoring.
-- Extend testing for key rotation, backup failures, and recovery scenarios.
-- Deploy selected controls in a cloud environment for practical validation.
-
-## Disclaimer
-
-This project is intended for educational purposes, authorized security testing, and cybersecurity portfolio development. It is not a substitute for a professionally reviewed production security architecture.
+- Verify Azure Blob Inventory report generation and inspect the resulting CSV.
+- Validate lifecycle tier transitions when the configured conditions are met.
+- Test storage access from allowed and denied network locations.
+- Perform a controlled soft-delete and recovery test.
+- Decode and inspect selected change-feed events.
+- Expand Azure identity-based access-control testing.
+- Explore managed key services and key-rotation workflows.
+- Add further automated tests and improve recovery validation.
+- Add sanitized screenshots and test evidence to the repository.
+- Improve monitoring and alerting for relevant storage-security events.
 
 ## Author
 
 Cybersecurity and Cloud Security Learner
 
-**Focus areas:** Data protection, encryption, identity and access management, cloud security, and security testing.
+This project is part of an ongoing hands-on learning journey in cloud security, data protection, and security engineering.
